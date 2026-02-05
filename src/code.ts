@@ -69,7 +69,6 @@ figma.ui.onmessage = async (msg) => {
 
       // Retrieve modes from the collection
       const modes = collection.modes;
-      console.log(modes);
       if (modes.length === 0) {
         figma.notify("No modes found in the collection!");
         return;
