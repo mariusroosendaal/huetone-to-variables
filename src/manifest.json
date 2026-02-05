@@ -1,0 +1,14 @@
+{
+  "name": "Huetone to Variables",
+  "id": "1419000403251649467",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "index.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
+}
