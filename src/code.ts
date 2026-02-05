@@ -75,14 +75,16 @@ figma.ui.onmessage = async (msg) => {
         );
       }
       if (!collection) {
-        figma.notify("No valid collection selected or created.");
+        figma.notify("No valid collection selected or created.", {
+          error: true,
+        });
         return;
       }
 
       // Retrieve modes from the collection
       const modes = collection.modes;
       if (modes.length === 0) {
-        figma.notify("No modes found in the collection!");
+        figma.notify("No modes found in the collection.", { error: true });
         return;
       }
       const modeId = modes[0].modeId; // Assuming first mode, adjust if needed
@@ -119,8 +121,7 @@ figma.ui.onmessage = async (msg) => {
                 newHexColor.toUpperCase() !== currentHexColor.toUpperCase(); // Compare as uppercase
 
               if (hasChanged && overwrite) {
-                console.log(`Overwriting existing variable: ${variableName}`);
-                figma.notify(`Overwriting existing variable: ${variableName}`);
+                figma.notify(`Overwriting: ${variableName}`);
                 existingVariable.setValueForMode(modeId, hexToRgb(newHexColor)); // Set new color
               }
             } else {
@@ -138,7 +139,9 @@ figma.ui.onmessage = async (msg) => {
       figma.notify("Variables imported successfully");
     } catch (error) {
       console.error("Error processing JSON:", error);
-      figma.notify("Failed to import variables. Please check your JSON.");
+      figma.notify("Failed to import variables. Please check your JSON.", {
+        error: true,
+      });
     }
     figma.ui.close();
     figma.closePlugin();
