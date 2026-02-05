@@ -1,14 +1,24 @@
 // Show the plugin UI
 figma.showUI(__html__, { themeColors: true, width: 320, height: 420 });
 
+interface CollectionData {
+  name: string;
+  variables: Variable[];
+}
+
+interface HuetoneColorData {
+  type: string;
+  value: string;
+}
+
 // Main plugin logic
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "populateOptions") {
     try {
       const localVariables =
         await figma.variables.getLocalVariablesAsync("COLOR");
-      const collections = {};
-      //console.log(localVariables);
+      const collections: Record<string, CollectionData> = {};
+
       // Organize variables by collection
       for (const variable of localVariables) {
         const collectionId = variable.variableCollectionId;
@@ -17,7 +27,9 @@ figma.ui.onmessage = async (msg) => {
         if (collectionId) {
           const collection =
             await figma.variables.getVariableCollectionByIdAsync(collectionId);
-          collectionName = collection.name || collectionName;
+          if (collection) {
+            collectionName = collection.name || collectionName;
+          }
         }
 
         if (!collections[collectionId]) {
@@ -32,14 +44,14 @@ figma.ui.onmessage = async (msg) => {
         label: collections[collectionId].name,
         value: collectionId,
       }));
-      //console.log(options);
+
       figma.ui.postMessage({
         type: "populateOptions",
         options: options,
       });
     } catch (error) {
       console.error("Error fetching variables or collections:", error);
-      figma.notify("Error fetching variables or collections:", error);
+      figma.notify("Error fetching variables or collections", { error: true });
     }
   }
 
@@ -82,7 +94,9 @@ figma.ui.onmessage = async (msg) => {
       );
 
       // Process the JSON data
-      for (const [groupName, shades] of Object.entries(jsonData)) {
+      for (const [groupName, shades] of Object.entries(
+        jsonData as Record<string, Record<string, HuetoneColorData>>,
+      )) {
         for (const [shade, colorData] of Object.entries(shades)) {
           if (colorData.type === "color") {
             const variableName = `${groupName}/${shade}`;
@@ -94,7 +108,7 @@ figma.ui.onmessage = async (msg) => {
             const newHexColor = colorData.value; // Get new color from JSON
 
             if (existingVariable) {
-              const currentValue = existingVariable.valuesByMode[modeId]; // Get current value for the mode
+              const currentValue = existingVariable.valuesByMode[modeId] as RGB; // Get current value for the mode
 
               const currentHexColor = rgbToHex(
                 Math.round(currentValue.r * 255),
@@ -131,7 +145,7 @@ figma.ui.onmessage = async (msg) => {
   }
 };
 
-function rgbToHex(r, g, b) {
+function rgbToHex(r: number, g: number, b: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
 }
 

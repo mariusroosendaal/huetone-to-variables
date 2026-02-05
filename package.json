@@ -20,7 +20,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "lint": "eslint . --ext .ts,.js,.svelte && npx prettier --check \"src/**/*.{js,ts,svelte,html,css}\"",
+    "lint": "tsc --noEmit && eslint . --ext .ts,.js,.svelte && npx prettier --check \"src/**/*.{js,ts,svelte,html,css}\"",
     "prettier": "npx prettier --write \"src/**/*.{js,ts,svelte,html,css}\""
   },
   "dependencies": {
