@@ -12,7 +12,7 @@
     Footer,
     sendToPlugin,
     createMessageHandler,
-  } from "figma-plugin-utils";
+  } from "figma-plugin-utilities";
 
   let jsonInput = "";
   let overwrite = false;

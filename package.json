@@ -24,7 +24,7 @@
     "prettier": "npx prettier --write \"src/**/*.{js,ts,svelte,html,css}\""
   },
   "dependencies": {
-    "figma-plugin-utils": "file:../_packages/figma-plugin-utils"
+    "figma-plugin-utilities": "file:../_packages/figma-plugin-utilities"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
