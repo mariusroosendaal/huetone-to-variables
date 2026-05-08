@@ -1,7 +1,7 @@
 {
   "name": "huetone-colors-to-variables",
   "version": "1.0.0",
-  "description": "A modern Figma plugin boilerplate built with Svelte and a UI3 Kit",
+  "description": "Import Huetone JSON color palettes as Figma color variables",
   "type": "module",
   "author": "Marius Roosendaal",
   "license": "MIT",
@@ -9,10 +9,9 @@
     "figma",
     "figma-plugin",
     "svelte",
-    "boilerplate",
-    "typescript",
-    "vite",
-    "ui3-kit"
+    "huetone",
+    "color",
+    "variables"
   ],
   "engines": {
     "node": ">=18.0.0"
