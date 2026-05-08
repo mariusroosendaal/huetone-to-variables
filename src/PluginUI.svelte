@@ -56,7 +56,12 @@
 <div class="plugin-container">
   <PluginLayout>
     <FieldGroup label="Huetone JSON" labelFor="huetone-json">
-      <Textarea bind:value={jsonInput} {placeholder} rows={9} id="huetone-json" />
+      <Textarea
+        bind:value={jsonInput}
+        {placeholder}
+        rows={9}
+        id="huetone-json"
+      />
     </FieldGroup>
 
     <FieldGroup label="Select collection">
@@ -73,7 +78,11 @@
     </Checkbox>
 
     <FieldGroup label="Create new collection" labelFor="new-collection-name">
-      <Input bind:value={newCollectionName} placeholder="Collection name" id="new-collection-name" />
+      <Input
+        bind:value={newCollectionName}
+        placeholder="Collection name"
+        id="new-collection-name"
+      />
     </FieldGroup>
   </PluginLayout>
 
