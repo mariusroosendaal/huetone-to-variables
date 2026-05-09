@@ -5,6 +5,7 @@
     Dropdown,
     Input,
     Textarea,
+    Tooltip,
   } from "figma-ui3-kit-svelte";
   import {
     PluginLayout,
@@ -12,6 +13,7 @@
     Footer,
     sendToPlugin,
     createMessageHandler,
+    resizeToFit,
   } from "figma-plugin-utilities";
 
   let jsonInput = "";
@@ -20,16 +22,25 @@
   let selectedCollection = null;
   let newCollectionName = "";
   let isLoading = false;
-  let collectionsLoaded = false;
 
-  $: collectionOptions = collections.map((c) => ({
-    label: c.label,
-    value: c.value,
-  }));
+  const NEW_COLLECTION_SENTINEL = "__new__";
 
+  $: collectionOptions = [
+    ...collections.map((c) => ({ label: c.label, value: c.value })),
+    { label: "Create new collection…", value: NEW_COLLECTION_SENTINEL },
+  ];
+
+  $: isCreatingNew = selectedCollection?.value === NEW_COLLECTION_SENTINEL;
+  $: resizeToFit({ width: 240, height: isCreatingNew ? 428 : 364 });
   $: hasCollection =
-    selectedCollection !== null || newCollectionName.trim() !== "";
+    selectedCollection !== null &&
+    (!isCreatingNew || newCollectionName.trim() !== "");
   $: canImport = jsonInput.trim() !== "" && hasCollection && !isLoading;
+  $: importTooltip = !jsonInput.trim()
+    ? "Paste Huetone JSON to import"
+    : !hasCollection
+      ? "Select or name a collection"
+      : "";
 
   const placeholder = `{
   "Grey": {
@@ -46,20 +57,21 @@
     sendToPlugin("generate-variables", {
       json: jsonInput,
       overwrite,
-      selectedCollection: selectedCollection?.value || "",
-      newCollection: newCollectionName,
+      selectedCollection: isCreatingNew ? "" : selectedCollection?.value || "",
+      newCollection: isCreatingNew ? newCollectionName : "",
     });
   }
 
   window.onmessage = createMessageHandler({
     populateOptions: (msg) => {
       collections = msg.options || [];
-      collectionsLoaded = true;
       if (typeof msg.savedOverwrite === "boolean")
         overwrite = msg.savedOverwrite;
       if (msg.savedCollection) {
         const saved = collections.find((c) => c.value === msg.savedCollection);
         if (saved) selectedCollection = saved;
+      } else if (collections.length === 0) {
+        selectedCollection = { label: "Create new collection…", value: NEW_COLLECTION_SENTINEL };
       }
     },
     done: () => {
@@ -72,52 +84,50 @@
 
 <div class="plugin-container">
   <PluginLayout>
-    <FieldGroup label="Huetone JSON" labelFor="huetone-json">
+    <FieldGroup label="Color JSON" labelFor="color-json">
       <Textarea
         bind:value={jsonInput}
         {placeholder}
         rows={9}
-        id="huetone-json"
+        id="color-json"
       />
     </FieldGroup>
 
-    <FieldGroup label="Select collection">
+    <FieldGroup label="Collection">
       <Dropdown
         menuItems={collectionOptions}
         bind:value={selectedCollection}
-        placeholder="Select existing collection"
-        ariaLabel="Select collection"
+        placeholder="Select collection"
+        ariaLabel="Collection"
       />
     </FieldGroup>
 
-    {#if collectionsLoaded && collections.length === 0}
-      <p class="hint">
-        No collections found — enter a name below to create one.
-      </p>
+    {#if isCreatingNew}
+      <FieldGroup label="New collection name" labelFor="new-collection-name">
+        <Input
+          bind:value={newCollectionName}
+          placeholder="Collection name"
+          id="new-collection-name"
+        />
+      </FieldGroup>
     {/if}
 
     <Checkbox bind:checked={overwrite}>
-      Overwrite (changed) existing variables
+      Update existing variables
     </Checkbox>
-
-    <FieldGroup label="Create new collection" labelFor="new-collection-name">
-      <Input
-        bind:value={newCollectionName}
-        placeholder="Collection name"
-        id="new-collection-name"
-      />
-    </FieldGroup>
   </PluginLayout>
 
   <Footer variant="full">
-    <Button
-      variant="primary"
-      on:click={handleImport}
-      fullWidth
-      disabled={!canImport}
-    >
-      {isLoading ? "Importing..." : "Import variables"}
-    </Button>
+    <Tooltip label={importTooltip} disabled={canImport}>
+      <Button
+        variant="primary"
+        on:click={handleImport}
+        fullWidth
+        ariaDisabled={!canImport}
+      >
+        {isLoading ? "Importing..." : "Import variables"}
+      </Button>
+    </Tooltip>
   </Footer>
 </div>
 
@@ -128,9 +138,4 @@
     flex-direction: column;
   }
 
-  .hint {
-    margin: 4px 0 0;
-    font-size: 11px;
-    color: var(--figma-color-text-secondary);
-  }
 </style>
