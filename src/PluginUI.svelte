@@ -19,11 +19,17 @@
   let collections = [];
   let selectedCollection = null;
   let newCollectionName = "";
+  let isLoading = false;
+  let collectionsLoaded = false;
 
   $: collectionOptions = collections.map((c) => ({
     label: c.label,
     value: c.value,
   }));
+
+  $: hasCollection =
+    selectedCollection !== null || newCollectionName.trim() !== "";
+  $: canImport = jsonInput.trim() !== "" && hasCollection && !isLoading;
 
   const placeholder = `{
   "Grey": {
@@ -35,6 +41,8 @@
       ...`;
 
   function handleImport() {
+    if (!canImport) return;
+    isLoading = true;
     sendToPlugin("generate-variables", {
       json: jsonInput,
       overwrite,
@@ -46,10 +54,19 @@
   window.onmessage = createMessageHandler({
     populateOptions: (msg) => {
       collections = msg.options || [];
+      collectionsLoaded = true;
+      if (typeof msg.savedOverwrite === "boolean")
+        overwrite = msg.savedOverwrite;
+      if (msg.savedCollection) {
+        const saved = collections.find((c) => c.value === msg.savedCollection);
+        if (saved) selectedCollection = saved;
+      }
+    },
+    done: () => {
+      isLoading = false;
     },
   });
 
-  // Request options on load
   sendToPlugin("populateOptions");
 </script>
 
@@ -73,6 +90,12 @@
       />
     </FieldGroup>
 
+    {#if collectionsLoaded && collections.length === 0}
+      <p class="hint">
+        No collections found — enter a name below to create one.
+      </p>
+    {/if}
+
     <Checkbox bind:checked={overwrite}>
       Overwrite (changed) existing variables
     </Checkbox>
@@ -87,8 +110,13 @@
   </PluginLayout>
 
   <Footer variant="full">
-    <Button variant="primary" on:click={handleImport} fullWidth>
-      Import variables
+    <Button
+      variant="primary"
+      on:click={handleImport}
+      fullWidth
+      disabled={!canImport}
+    >
+      {isLoading ? "Importing..." : "Import variables"}
     </Button>
   </Footer>
 </div>
@@ -98,5 +126,11 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+  }
+
+  .hint {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: var(--figma-color-text-secondary);
   }
 </style>
