@@ -71,7 +71,10 @@
         const saved = collections.find((c) => c.value === msg.savedCollection);
         if (saved) selectedCollection = saved;
       } else if (collections.length === 0) {
-        selectedCollection = { label: "Create new collection…", value: NEW_COLLECTION_SENTINEL };
+        selectedCollection = {
+          label: "Create new collection…",
+          value: NEW_COLLECTION_SENTINEL,
+        };
       }
     },
     done: () => {
@@ -85,12 +88,7 @@
 <div class="plugin-container">
   <PluginLayout>
     <FieldGroup label="Color JSON" labelFor="color-json">
-      <Textarea
-        bind:value={jsonInput}
-        {placeholder}
-        rows={9}
-        id="color-json"
-      />
+      <Textarea bind:value={jsonInput} {placeholder} rows={9} id="color-json" />
     </FieldGroup>
 
     <FieldGroup label="Collection">
@@ -112,9 +110,7 @@
       </FieldGroup>
     {/if}
 
-    <Checkbox bind:checked={overwrite}>
-      Update existing variables
-    </Checkbox>
+    <Checkbox bind:checked={overwrite}>Update existing variables</Checkbox>
   </PluginLayout>
 
   <Footer variant="full">
@@ -137,5 +133,4 @@
     display: flex;
     flex-direction: column;
   }
-
 </style>

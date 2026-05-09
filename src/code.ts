@@ -27,7 +27,8 @@ function extractHuetoneColors(
     )) {
       if (typeof colorData !== "object" || colorData === null) return null;
       const entry = colorData as Partial<HuetoneColorData>;
-      if (entry.type !== "color" || typeof entry.value !== "string") return null;
+      if (entry.type !== "color" || typeof entry.value !== "string")
+        return null;
       if (!isValidHex(entry.value)) continue;
       entries.push({ name: `${groupName}/${shade}`, hex: entry.value });
     }
@@ -220,7 +221,9 @@ figma.ui.onmessage = async (msg) => {
         );
       }
 
-      figma.notify("Variables imported successfully. Press Ctrl/Cmd+Z to undo.");
+      figma.notify(
+        "Variables imported successfully. Press Ctrl/Cmd+Z to undo.",
+      );
       figma.ui.close();
       figma.closePlugin();
     } catch (error) {
