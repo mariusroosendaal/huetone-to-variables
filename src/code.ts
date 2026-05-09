@@ -26,10 +26,10 @@ function extractHuetoneColors(
       shades as Record<string, unknown>,
     )) {
       if (typeof colorData !== "object" || colorData === null) return null;
-      const data = colorData as Partial<HuetoneColorData>;
-      if (data.type !== "color" || typeof data.value !== "string") return null;
-      if (!isValidHex(data.value)) continue;
-      entries.push({ name: `${groupName}/${shade}`, hex: data.value });
+      const entry = colorData as Partial<HuetoneColorData>;
+      if (entry.type !== "color" || typeof entry.value !== "string") return null;
+      if (!isValidHex(entry.value)) continue;
+      entries.push({ name: `${groupName}/${shade}`, hex: entry.value });
     }
   }
 
@@ -79,27 +79,17 @@ figma.ui.onmessage = async (msg) => {
       const localVariables =
         await figma.variables.getLocalVariablesAsync("COLOR");
 
-      // Fetch each collection at most once
-      const collectionNames = new Map<string, string>();
-      const collectionOrder: string[] = [];
-
-      for (const variable of localVariables) {
-        const collectionId = variable.variableCollectionId;
-        if (!collectionNames.has(collectionId)) {
-          const collection =
-            await figma.variables.getVariableCollectionByIdAsync(collectionId);
-          collectionNames.set(
-            collectionId,
-            collection?.name ?? "Unknown Collection",
-          );
-          collectionOrder.push(collectionId);
-        }
-      }
-
-      const options = collectionOrder.map((id) => ({
-        label: collectionNames.get(id)!,
-        value: id,
-      }));
+      const uniqueCollectionIds = [
+        ...new Set(localVariables.map((v) => v.variableCollectionId)),
+      ];
+      const fetchedCollections = await Promise.all(
+        uniqueCollectionIds.map((id) =>
+          figma.variables.getVariableCollectionByIdAsync(id),
+        ),
+      );
+      const options = fetchedCollections
+        .filter(Boolean)
+        .map((c) => ({ label: c!.name, value: c!.id }));
 
       const savedOverwrite = await figma.clientStorage.getAsync("overwrite");
       const savedCollection =
@@ -124,7 +114,6 @@ figma.ui.onmessage = async (msg) => {
     try {
       if (typeof msg.json !== "string" || msg.json.trim() === "") {
         figma.notify("No JSON provided.", { error: true });
-        figma.ui.postMessage({ type: "done" });
         return;
       }
 
@@ -135,10 +124,10 @@ figma.ui.onmessage = async (msg) => {
         jsonData === null ||
         Array.isArray(jsonData)
       ) {
-        figma.notify("Invalid JSON: expected an object at the top level.", {
-          error: true,
-        });
-        figma.ui.postMessage({ type: "done" });
+        figma.notify(
+          "Invalid JSON — make sure you're pasting the full palette object.",
+          { error: true },
+        );
         return;
       }
 
@@ -149,7 +138,6 @@ figma.ui.onmessage = async (msg) => {
           "Unrecognized JSON format. Paste a Huetone or Prism palette.",
           { error: true },
         );
-        figma.ui.postMessage({ type: "done" });
         return;
       }
 
@@ -175,17 +163,15 @@ figma.ui.onmessage = async (msg) => {
       }
 
       if (!collection) {
-        figma.notify("No valid collection selected or created.", {
+        figma.notify("Select a collection or enter a name for a new one.", {
           error: true,
         });
-        figma.ui.postMessage({ type: "done" });
         return;
       }
 
       const modes = collection.modes;
       if (modes.length === 0) {
         figma.notify("No modes found in the collection.", { error: true });
-        figma.ui.postMessage({ type: "done" });
         return;
       }
       const modeId = modes[0].modeId;
@@ -234,7 +220,7 @@ figma.ui.onmessage = async (msg) => {
         );
       }
 
-      figma.notify("Variables imported successfully. Press Cmd+Z to undo.");
+      figma.notify("Variables imported successfully. Press Ctrl/Cmd+Z to undo.");
       figma.ui.close();
       figma.closePlugin();
     } catch (error) {
@@ -242,6 +228,7 @@ figma.ui.onmessage = async (msg) => {
       figma.notify("Failed to import variables. Please check your JSON.", {
         error: true,
       });
+    } finally {
       figma.ui.postMessage({ type: "done" });
     }
   }

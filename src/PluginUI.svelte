@@ -37,7 +37,7 @@
     (!isCreatingNew || newCollectionName.trim() !== "");
   $: canImport = jsonInput.trim() !== "" && hasCollection && !isLoading;
   $: importTooltip = !jsonInput.trim()
-    ? "Paste Huetone JSON to import"
+    ? "Paste color JSON to import"
     : !hasCollection
       ? "Select or name a collection"
       : "";
