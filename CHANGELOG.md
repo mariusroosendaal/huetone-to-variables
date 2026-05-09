@@ -11,7 +11,7 @@
 - Import button is now disabled when the JSON field is empty or no collection is specified, preventing the no-op error path
 - Import button is disabled while an import is in progress, preventing double-submit
 - Per-variable "Overwriting:" notifications removed; a single success notification is shown instead
-- Success notification now includes "Press Cmd+Z to undo."
+- Success notification now includes "Press Ctrl/Cmd+Z to undo."
 - Error paths in `generate-variables` now post a `done` message so the button re-enables on failure
 - `populateOptions` error path now posts an empty options list so the UI unblocks rather than waiting indefinitely
 
