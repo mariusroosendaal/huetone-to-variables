@@ -88,7 +88,7 @@
 <div class="plugin-container">
   <PluginLayout>
     <FieldGroup label="Color JSON" labelFor="color-json">
-      <Textarea bind:value={jsonInput} {placeholder} rows={9} id="color-json" />
+      <Textarea bind:value={jsonInput} {placeholder} rows={9} id="color-json" variant="code"/>
     </FieldGroup>
 
     <FieldGroup label="Collection">
