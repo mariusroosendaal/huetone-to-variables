@@ -1,3 +1,5 @@
+![Huetone to Variables Cover](assets/thumbnail.png)
+
 # Huetone to Variables
 
 Import [Huetone](https://huetone.ardov.me/) and GitHub Prism color palettes directly into Figma variables.
