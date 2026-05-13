@@ -2,7 +2,7 @@
 
 # Huetone to Variables
 
-Import [Huetone](https://huetone.ardov.me/) and GitHub Prism color palettes directly into Figma variables.
+A Figma plugin for importing [Huetone](https://huetone.ardov.me/) and GitHub Prism color palettes directly into Figma variables.
 
 ## What it does
 
