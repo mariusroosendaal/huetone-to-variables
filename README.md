@@ -8,8 +8,6 @@ A Figma plugin for importing [Huetone](https://huetone.ardov.me/) and GitHub Pri
 
 Get it from the [Figma Community](https://www.figma.com/community/plugin/1419000403251649467/huetone-to-variables)
 
-The [user guide](https://figma-plugins.notion.site/Huetone-to-Variables-3ecf29c09c9d81dba9aaf015e9396e68) shows each screen and what its controls do.
-
 ## What it does
 
 Takes the JSON export from Huetone or Prism and creates color variables in Figma, organized by palette name and shade. Supports adding to an existing collection or creating a new one, with optional overwrite for existing values.
@@ -21,6 +19,8 @@ Takes the JSON export from Huetone or Prism and creates color variables in Figma
 3. Paste the JSON into the text area
 4. Select an existing collection or create a new collection
 5. Click import
+
+For each screen and what its controls do, see the [user guide](https://figma-plugins.notion.site/Huetone-to-Variables-3ecf29c09c9d81dba9aaf015e9396e68). <!-- dev -->
 
 ## Options
 
