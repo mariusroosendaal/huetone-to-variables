@@ -20,7 +20,7 @@ Takes the JSON export from Huetone or Prism and creates color variables in Figma
 4. Select an existing collection or create a new collection
 5. Click import
 
-For each screen and what its controls do, see the [user guide](https://figma-plugins.notion.site/Huetone-to-Variables-3ecf29c09c9d81dba9aaf015e9396e68). <!-- dev -->
+For each screen and what its controls do, see the [user guide](https://figma-plugins.notion.site/Huetone-to-Variables-3ecf29c09c9d81dba9aaf015e9396e68).
 
 ## Options
 
