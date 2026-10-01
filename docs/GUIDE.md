@@ -4,7 +4,7 @@ Huetone to Variables imports a color palette from Huetone or GitHub Prism as col
 
 ## Import a palette
 
-![](huetone-import.png)
+![](huetone-import.svg)
 
 Export the palette as JSON from Huetone or Prism, then run the plugin.
 
