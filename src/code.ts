@@ -1,4 +1,21 @@
-import { handleResize } from "figma-plugin-utilities/lib/figma-helpers";
+import {
+  handleResize,
+  createSettingsStore,
+} from "figma-plugin-utilities/lib/figma-helpers";
+import {
+  rgbToHex,
+  hexToRgb,
+  isValidHex,
+} from "figma-plugin-utilities/lib/colors";
+import { isColorValue } from "figma-plugin-utilities/lib/figma-variables";
+
+// Separate keys, as saved by earlier versions, so users keep their choices.
+const overwriteStore = createSettingsStore("overwrite", (raw) =>
+  typeof raw === "boolean" ? raw : undefined,
+);
+const collectionStore = createSettingsStore("selectedCollection", (raw) =>
+  typeof raw === "string" ? raw : undefined,
+);
 
 // Show the plugin UI
 figma.showUI(__html__, { themeColors: true, width: 240, height: 364 });
@@ -92,17 +109,14 @@ figma.ui.onmessage = async (msg) => {
         .filter(Boolean)
         .map((c) => ({ label: c!.name, value: c!.id }));
 
-      const savedOverwrite = await figma.clientStorage.getAsync("overwrite");
-      const savedCollection =
-        await figma.clientStorage.getAsync("selectedCollection");
+      const savedOverwrite = await overwriteStore.load();
+      const savedCollection = await collectionStore.load();
 
       figma.ui.postMessage({
         type: "populateOptions",
         options,
-        savedOverwrite:
-          typeof savedOverwrite === "boolean" ? savedOverwrite : undefined,
-        savedCollection:
-          typeof savedCollection === "string" ? savedCollection : undefined,
+        savedOverwrite,
+        savedCollection,
       });
     } catch (error) {
       console.error("Error fetching variables or collections:", error);
@@ -186,18 +200,16 @@ figma.ui.onmessage = async (msg) => {
       );
 
       for (const { name, hex } of colors) {
+        const rgb = hexToRgb(hex);
+        if (!rgb) continue;
         const existingVariable = variablesByName.get(name);
 
         if (existingVariable) {
           const currentValue = existingVariable.valuesByMode[modeId];
-          if (overwrite && isRGBColor(currentValue)) {
-            const currentHex = rgbToHex(
-              Math.round(currentValue.r * 255),
-              Math.round(currentValue.g * 255),
-              Math.round(currentValue.b * 255),
-            );
-            if (hex.toUpperCase() !== currentHex.toUpperCase()) {
-              existingVariable.setValueForMode(modeId, hexToRgb(hex));
+          if (overwrite && isColorValue(currentValue)) {
+            const currentHex = rgbToHex(currentValue);
+            if (hex.toUpperCase() !== currentHex) {
+              existingVariable.setValueForMode(modeId, rgb);
             }
           }
         } else {
@@ -206,19 +218,16 @@ figma.ui.onmessage = async (msg) => {
             collection,
             "COLOR",
           );
-          colorVariable.setValueForMode(modeId, hexToRgb(hex));
+          colorVariable.setValueForMode(modeId, rgb);
         }
       }
 
-      await figma.clientStorage.setAsync("overwrite", overwrite);
+      await overwriteStore.save(overwrite);
       if (
         msg.selectedCollection &&
         typeof msg.selectedCollection === "string"
       ) {
-        await figma.clientStorage.setAsync(
-          "selectedCollection",
-          msg.selectedCollection,
-        );
+        await collectionStore.save(msg.selectedCollection);
       }
 
       figma.notify(
@@ -236,29 +245,3 @@ figma.ui.onmessage = async (msg) => {
     }
   }
 };
-
-function isValidHex(hex: string): boolean {
-  return /^#[0-9A-Fa-f]{6}$/.test(hex);
-}
-
-function isRGBColor(value: unknown): value is RGB {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "r" in value &&
-    "g" in value &&
-    "b" in value
-  );
-}
-
-function rgbToHex(r: number, g: number, b: number): string {
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-}
-
-function hexToRgb(hex: string) {
-  const bigint = parseInt(hex.slice(1), 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-  return { r: r / 255, g: g / 255, b: b / 255 };
-}
