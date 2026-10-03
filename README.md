@@ -24,9 +24,9 @@ For each screen and what its controls do, see the [user guide](https://figma-plu
 
 ## Options
 
-- **Select collection** - Add variables to an existing collection
-- **Create new collection** - Create a fresh collection for the import
-- **Overwrite existing** - Update values if variables already exist
+- **Select collection** — Add variables to an existing collection
+- **Create new collection** — Create a fresh collection for the import
+- **Overwrite existing** — Update values if variables already exist
 
 ## Development
 
