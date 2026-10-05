@@ -8,10 +8,10 @@ Huetone to Variables turns a color palette from Huetone or GitHub Prism into col
 
 Export the palette as JSON from Huetone or Prism, then run the plugin.
 
-1. **Color JSON** — the palette to import, in one of two formats. In Huetone's, each palette holds shades with a `value` and `"type": "color"`. In Prism's, each color is a list of hex values, which become numbered variables from `0` (`blue/0`, `blue/1`), or a single hex value. Only six-digit hex values import, such as `#f8f8f8`.
-2. **Collection** — the collection the variables go to. The list shows the collections that already hold color variables. To create a collection, choose **Create new collection…** and enter a **New collection name**.
-3. **Update existing variables** — gives each variable that already has a palette name the value from the palette. Without it, your current values stay as they are.
+1. **Color JSON** — paste the exported palette.
+2. **Collection** — a collection that already holds color variables. **Create new collection…** creates one with the **New collection name**.
+3. **Update existing variables** — gives existing variables the palette's values. Without it, they keep their values.
 
-Click **Import variables** to add the missing variables. The plugin writes the values to the collection's first mode, then closes. Press Ctrl/Cmd+Z to undo. The next time you open it, the plugin selects the same existing collection and keeps your **Update existing variables** choice.
+Click **Import variables** to add the missing variables to the collection's first mode. Press Ctrl/Cmd+Z to undo.
 
-If the plugin can't read the JSON, it shows an error and stays open, so you can fix the JSON and try again.
+A Prism color can be one hex value or a list, which becomes numbered variables from `0`: `blue/0`, `blue/1`. Only six-digit hex values import, such as `#f8f8f8`. If the JSON can't be read, you see an error; fix the JSON and try again.
