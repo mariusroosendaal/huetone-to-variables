@@ -90,6 +90,12 @@ function extractColors(data: Record<string, unknown>): ColorEntry[] | null {
   return extractHuetoneColors(data);
 }
 
+// What's wrong with the pasted palette, shown under it in the open window.
+// The UI checks the JSON first; the format only the plugin can read.
+function paletteError(message: string) {
+  figma.ui.postMessage({ type: "paletteError", message });
+}
+
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "resize") {
     handleResize(msg);
@@ -142,7 +148,7 @@ figma.ui.onmessage = async (msg) => {
       try {
         jsonData = JSON.parse(msg.json);
       } catch {
-        showError(
+        paletteError(
           "The JSON isn't valid. Copy the palette from Huetone or Prism again, then paste all of it.",
         );
         return;
@@ -153,7 +159,7 @@ figma.ui.onmessage = async (msg) => {
         jsonData === null ||
         Array.isArray(jsonData)
       ) {
-        showError(
+        paletteError(
           "The JSON isn't a palette. Copy the palette from Huetone or Prism again, then paste all of it.",
         );
         return;
@@ -162,7 +168,7 @@ figma.ui.onmessage = async (msg) => {
       const colors = extractColors(jsonData as Record<string, unknown>);
 
       if (!colors) {
-        showError(
+        paletteError(
           "The JSON isn't a Huetone or Prism palette. Paste one of those.",
         );
         return;
@@ -214,6 +220,7 @@ figma.ui.onmessage = async (msg) => {
       let created = 0;
       let updated = 0;
       let kept = 0;
+      let aliased = 0;
       for (const { name, hex } of colors) {
         const rgb = hexToRgb(hex);
         if (!rgb) continue;
@@ -221,17 +228,16 @@ figma.ui.onmessage = async (msg) => {
 
         if (existingVariable) {
           const currentValue = existingVariable.valuesByMode[modeId];
-          if (overwrite && isColorValue(currentValue)) {
-            const currentHex = rgbToHex(currentValue);
-            if (hex.toUpperCase() !== currentHex) {
+          // An alias stays, even with Update existing variables on.
+          if (!isColorValue(currentValue)) {
+            aliased++;
+          } else if (hex.toUpperCase() !== rgbToHex(currentValue)) {
+            if (overwrite) {
               existingVariable.setValueForMode(modeId, rgb);
               updated++;
+            } else {
+              kept++;
             }
-          } else if (
-            !isColorValue(currentValue) ||
-            hex.toUpperCase() !== rgbToHex(currentValue)
-          ) {
-            kept++;
           }
         } else {
           const colorVariable = figma.variables.createVariable(
@@ -252,13 +258,19 @@ figma.ui.onmessage = async (msg) => {
         await collectionStore.save(msg.selectedCollection);
       }
 
-      const keptNote =
-        kept > 0
-          ? ` Kept ${plural(kept, "variable")} with other values; turn on Update existing variables to replace them.`
-          : "";
+      const keptNote = [
+        kept > 0 &&
+          ` Kept ${plural(kept, "variable")} with other values; turn on Update existing variables to replace them.`,
+        aliased > 0 &&
+          ` Kept ${plural(aliased, "variable")} that alias other variables.`,
+      ]
+        .filter(Boolean)
+        .join("");
       if (created === 0 && updated === 0) {
         showNotice(
-          `Nothing to import: "${collection.name}" already has these colors.${keptNote}`,
+          keptNote
+            ? `Nothing imported into "${collection.name}".${keptNote}`
+            : `Nothing to import: "${collection.name}" already has these colors.`,
         );
         return;
       }

@@ -4,8 +4,9 @@
 
 ### Changed
 
-- **Import variables** ends with the number of variables created and updated, and how many kept their own values with **Update existing variables** off. When the collection already has the colors, a regular notification says so
-- A missing palette or collection shows as a regular notification that says what to do, instead of an error, and invalid JSON says how to fix it
+- **Import variables** ends with the number of variables created and updated, and how many kept their own values: with **Update existing variables** off, or because they alias another variable. When the collection already has the colors, a regular notification says so
+- A missing palette or collection shows as a regular notification that says what to do, instead of an error
+- JSON that isn't a Huetone or Prism palette shows under the field with how to fix it, and **Import variables** stays off until it's fixed
 
 ## [1.0.0] - 2026-05-09
 

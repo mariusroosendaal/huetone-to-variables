@@ -22,6 +22,8 @@
   let selectedCollection = null;
   let newCollectionName = "";
   let isLoading = false;
+  // The JSON last sent, and what the plugin found wrong with it as a palette
+  let paletteError = { json: "", message: "" };
 
   const NEW_COLLECTION_SENTINEL = "__new__";
 
@@ -35,12 +37,32 @@
   $: hasCollection =
     selectedCollection !== null &&
     (!isCreatingNew || newCollectionName.trim() !== "");
-  $: canImport = jsonInput.trim() !== "" && hasCollection && !isLoading;
+  $: jsonError =
+    checkJson(jsonInput) ||
+    (paletteError.json === jsonInput ? paletteError.message : "");
+  $: canImport =
+    jsonInput.trim() !== "" && !jsonError && hasCollection && !isLoading;
   $: importTooltip = !jsonInput.trim()
-    ? "Paste color JSON to import"
-    : !hasCollection
-      ? "Select or name a collection"
+    ? "Paste a Huetone or Prism palette to import."
+    : jsonError
+      ? jsonError
+      : !hasCollection
+        ? "Choose a collection, or name a new one."
+        : "";
+
+  // As code.ts checks it, so the problem shows under the field
+  function checkJson(text) {
+    if (!text.trim()) return "";
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return "The JSON isn't valid. Copy the palette from Huetone or Prism again, then paste all of it.";
+    }
+    return typeof data !== "object" || data === null || Array.isArray(data)
+      ? "The JSON isn't a palette. Copy the palette from Huetone or Prism again, then paste all of it."
       : "";
+  }
 
   const placeholder = `{
   "Grey": {
@@ -51,9 +73,12 @@
     "100": {
       ...`;
 
+  let sentJson = "";
+
   function handleImport() {
     if (!canImport) return;
     isLoading = true;
+    sentJson = jsonInput;
     sendToPlugin("generate-variables", {
       json: jsonInput,
       overwrite,
@@ -77,6 +102,9 @@
         };
       }
     },
+    paletteError: (msg) => {
+      paletteError = { json: sentJson, message: msg.message };
+    },
     done: () => {
       isLoading = false;
     },
@@ -94,6 +122,8 @@
         rows={9}
         id="color-json"
         variant="code"
+        invalid={!!jsonError}
+        errorMessage={jsonError}
       />
     </FieldGroup>
 
