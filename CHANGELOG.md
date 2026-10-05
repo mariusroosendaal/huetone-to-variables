@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **Import variables** ends with the number of variables created and updated, and how many kept their own values with **Update existing variables** off. When the collection already has the colors, a regular notification says so
+- A missing palette or collection shows as a regular notification that says what to do, instead of an error, and invalid JSON says how to fix it
+
 ## [1.0.0] - 2026-05-09
 
 ### Added

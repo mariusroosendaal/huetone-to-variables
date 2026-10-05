@@ -1,7 +1,11 @@
 import {
   handleResize,
   createSettingsStore,
+  showError,
+  showNotice,
+  showSuccess,
 } from "figma-plugin-utilities/lib/figma-helpers";
+import { joinList, plural, UNDO } from "figma-plugin-utilities/lib/format";
 import {
   rgbToHex,
   hexToRgb,
@@ -121,27 +125,36 @@ figma.ui.onmessage = async (msg) => {
     } catch (error) {
       console.error("Error fetching variables or collections:", error);
       figma.ui.postMessage({ type: "populateOptions", options: [] });
-      figma.notify("Error fetching variables or collections", { error: true });
+      showError(
+        "Couldn't read the variable collections. Reopen the plugin to try again.",
+      );
     }
   }
 
   if (msg.type === "generate-variables") {
     try {
       if (typeof msg.json !== "string" || msg.json.trim() === "") {
-        figma.notify("No JSON provided.", { error: true });
+        showNotice("Paste a Huetone or Prism palette, then import.");
         return;
       }
 
-      const jsonData: unknown = JSON.parse(msg.json);
+      let jsonData: unknown;
+      try {
+        jsonData = JSON.parse(msg.json);
+      } catch {
+        showError(
+          "The JSON isn't valid. Copy the palette from Huetone or Prism again, then paste all of it.",
+        );
+        return;
+      }
 
       if (
         typeof jsonData !== "object" ||
         jsonData === null ||
         Array.isArray(jsonData)
       ) {
-        figma.notify(
-          "Invalid JSON — make sure you're pasting the full palette object.",
-          { error: true },
+        showError(
+          "The JSON isn't a palette. Copy the palette from Huetone or Prism again, then paste all of it.",
         );
         return;
       }
@@ -149,9 +162,8 @@ figma.ui.onmessage = async (msg) => {
       const colors = extractColors(jsonData as Record<string, unknown>);
 
       if (!colors) {
-        figma.notify(
-          "Unrecognized JSON format. Paste a Huetone or Prism palette.",
-          { error: true },
+        showError(
+          "The JSON isn't a Huetone or Prism palette. Paste one of those.",
         );
         return;
       }
@@ -178,15 +190,15 @@ figma.ui.onmessage = async (msg) => {
       }
 
       if (!collection) {
-        figma.notify("Select a collection or enter a name for a new one.", {
-          error: true,
-        });
+        showNotice("Choose a collection, or name a new one, then import.");
         return;
       }
 
       const modes = collection.modes;
       if (modes.length === 0) {
-        figma.notify("No modes found in the collection.", { error: true });
+        showError(
+          `"${collection.name}" has no modes. Add one, or choose another collection.`,
+        );
         return;
       }
       const modeId = modes[0].modeId;
@@ -199,6 +211,9 @@ figma.ui.onmessage = async (msg) => {
           .map((v) => [v.name, v]),
       );
 
+      let created = 0;
+      let updated = 0;
+      let kept = 0;
       for (const { name, hex } of colors) {
         const rgb = hexToRgb(hex);
         if (!rgb) continue;
@@ -210,7 +225,13 @@ figma.ui.onmessage = async (msg) => {
             const currentHex = rgbToHex(currentValue);
             if (hex.toUpperCase() !== currentHex) {
               existingVariable.setValueForMode(modeId, rgb);
+              updated++;
             }
+          } else if (
+            !isColorValue(currentValue) ||
+            hex.toUpperCase() !== rgbToHex(currentValue)
+          ) {
+            kept++;
           }
         } else {
           const colorVariable = figma.variables.createVariable(
@@ -219,6 +240,7 @@ figma.ui.onmessage = async (msg) => {
             "COLOR",
           );
           colorVariable.setValueForMode(modeId, rgb);
+          created++;
         }
       }
 
@@ -230,16 +252,32 @@ figma.ui.onmessage = async (msg) => {
         await collectionStore.save(msg.selectedCollection);
       }
 
-      figma.notify(
-        "Variables imported successfully. Press Ctrl/Cmd+Z to undo.",
+      const keptNote =
+        kept > 0
+          ? ` Kept ${plural(kept, "variable")} with other values; turn on Update existing variables to replace them.`
+          : "";
+      if (created === 0 && updated === 0) {
+        showNotice(
+          `Nothing to import: "${collection.name}" already has these colors.${keptNote}`,
+        );
+        return;
+      }
+      const changes = joinList(
+        [
+          created > 0 && `created ${plural(created, "variable")}`,
+          updated > 0 && `updated ${plural(updated, "variable")}`,
+        ].filter((part): part is string => !!part),
+      );
+      showSuccess(
+        `${changes[0].toUpperCase()}${changes.slice(1)} in "${collection.name}".${keptNote} ${UNDO}`,
       );
       figma.ui.close();
       figma.closePlugin();
     } catch (error) {
       console.error("Error processing JSON:", error);
-      figma.notify("Failed to import variables. Please check your JSON.", {
-        error: true,
-      });
+      showError(
+        "Couldn't import the variables. Press Ctrl/Cmd+Z to undo anything half-made, then try again.",
+      );
     } finally {
       figma.ui.postMessage({ type: "done" });
     }
