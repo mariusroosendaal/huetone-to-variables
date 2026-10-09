@@ -19,7 +19,7 @@ export default defineConfig([
     languageOptions: {
       parser: svelteParser,
       parserOptions: {
-        parser: "espree",
+        parser: tseslint.parser,
         ecmaVersion: "latest",
         sourceType: "module",
         extraFileExtensions: [".svelte"],
