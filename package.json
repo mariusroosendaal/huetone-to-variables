@@ -17,8 +17,8 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "vite build",
-    "dev": "vite build --watch",
+    "build": "vite build && vite build --mode code",
+    "dev": "vite build --watch & vite build --watch --mode code",
     "lint": "tsc --noEmit && eslint . --ext .ts,.js,.svelte && npx prettier --check \"src/**/*.{js,ts,svelte,html,css}\"",
     "prettier": "npx prettier --write \"src/**/*.{js,ts,svelte,html,css}\""
   },
