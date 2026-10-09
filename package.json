@@ -19,7 +19,7 @@
   "scripts": {
     "build": "vite build && vite build --mode code",
     "dev": "vite build --watch & vite build --watch --mode code",
-    "lint": "tsc --noEmit && eslint . --ext .ts,.js,.svelte && npx prettier --check \"src/**/*.{js,ts,svelte,html,css}\"",
+    "lint": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.svelte.json --fail-on-warnings && eslint . --ext .ts,.js,.svelte && npx prettier --check \"src/**/*.{js,ts,svelte,html,css}\"",
     "prettier": "npx prettier --write \"src/**/*.{js,ts,svelte,html,css}\""
   },
   "dependencies": {
@@ -37,6 +37,7 @@
     "prettier": "^3.9.8",
     "prettier-plugin-svelte": "^3.4.0",
     "svelte": "^4.2.20",
+    "svelte-check": "^4.3.6",
     "svelte-eslint-parser": "^1.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.70.0",

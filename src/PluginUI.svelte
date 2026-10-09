@@ -154,7 +154,6 @@
       <Button
         variant="primary"
         on:click={handleImport}
-        fullWidth
         ariaDisabled={!canImport}
       >
         {isLoading ? "Importing..." : "Import variables"}
