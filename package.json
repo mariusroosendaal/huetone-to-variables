@@ -23,7 +23,7 @@
     "prettier": "npx prettier --write \"src/**/*.{js,ts,svelte,html,css}\""
   },
   "dependencies": {
-    "figma-plugin-utilities": "file:../_packages/figma-plugin-utilities"
+    "figma-plugin-utilities": "^0.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -32,7 +32,7 @@
     "@types/node": "^22.13.4",
     "eslint": "^9.39.2",
     "eslint-plugin-svelte": "^3.23.0",
-    "figma-ui3-kit-svelte": "file:..//_packages/figma-ui3-kit-svelte",
+    "figma-ui3-kit-svelte": "^0.8.0",
     "globals": "^17.12.0",
     "prettier": "^3.9.8",
     "prettier-plugin-svelte": "^3.4.0",
